@@ -1,0 +1,44 @@
+.auth-root {
+  max-width: 420px;
+  margin: auto;
+  padding: 32px;
+  text-align: center;
+}
+
+.subtitle {
+  color: #4e7397;
+  margin-bottom: 24px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form input,
+.auth-form select {
+  padding: 14px;
+  border-radius: 999px;
+  border: 1px solid #d0dbe7;
+  font-size: 14px;
+}
+
+.auth-form button {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 999px;
+  border: none;
+  background: #4799eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.checkbox {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #4e7397;
+  align-items: center;
+}

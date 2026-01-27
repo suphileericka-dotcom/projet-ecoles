@@ -1,0 +1,95 @@
+/* =====================
+   THEME : RUPTURE
+===================== */
+
+.chat-root.rupture {
+  background: linear-gradient(180deg, #fff5f5, #fff1f2);
+}
+
+/* HEADER */
+.chat-root.rupture .chat-header {
+  background: rgba(255, 245, 245, 0.95);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.chat-root.rupture .chat-header h1 {
+  color: #7f1d1d;
+}
+
+.chat-root.rupture .sub {
+  color: #991b1b;
+}
+
+/* ONLINE */
+.chat-root.rupture .dot {
+  background: #ef4444;
+}
+
+/* NOTE */
+.chat-root.rupture .pinned-note {
+  background: rgba(239, 68, 68, 0.12);
+  border-left: 4px solid #ef4444;
+}
+
+/* MESSAGE */
+.chat-root.rupture .bubble {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #3b0a0a;
+}
+
+/* FOOTER */
+.chat-root.rupture .chat-footer {
+  background: rgba(255, 245, 245, 0.95);
+}
+
+.chat-root.rupture .chat-footer input {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.chat-root.rupture .chat-footer button {
+  background: #ef4444;
+  color: white;
+}
+
+/* =====================
+   GLOBAL BACK BUTTON – RUPTURE
+===================== */
+
+.back-button-global.rupture {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  border: none;
+  background: #ef4444; /* rouge rupture */
+  color: white;
+
+  font-size: 22px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.back-button-global.rupture:hover {
+  background: #dc2626;
+  transform: translateX(-4px);
+}
+
+.back-button-global.rupture:active {
+  transform: scale(0.9);
+}

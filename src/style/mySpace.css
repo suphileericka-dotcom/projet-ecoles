@@ -1,0 +1,154 @@
+.page.myspace-page {
+  min-height: 100vh;
+  background: linear-gradient(#f8fafc, #eef2ff);
+  padding: 20px 16px 48px;
+}
+
+.page-header {
+  max-width: 1100px;
+  margin: 44px auto 16px;
+  text-align: center;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.page-header p {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.block {
+  max-width: 1100px;
+  margin: 14px auto 0;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.block-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.story-card h3 {
+  margin: 12px 0 8px;
+}
+
+.story-body {
+  color: #374151;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.empty {
+  margin-top: 12px;
+  color: #6b7280;
+}
+
+.grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mini-card {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.mini-title {
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.mini-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.tag.on {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #6366f1;
+  color: white;
+}
+
+.muted {
+  color: #9ca3af;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn.primary {
+  background: #6366f1;
+  color: white;
+}
+
+.btn.ghost {
+  background: rgba(0,0,0,0.06);
+}
+
+.btn.tiny {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.ai-cta {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(99,102,241,0.10);
+  border: 1px solid rgba(99,102,241,0.18);
+}
+
+.ai-cta p {
+  margin: 6px 0 0;
+  color: #4b5563;
+}

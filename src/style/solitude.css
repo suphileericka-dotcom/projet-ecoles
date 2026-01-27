@@ -1,0 +1,107 @@
+/* =====================
+   THEME : SOLITUDE
+===================== */
+
+.chat-root.solitude {
+  background: linear-gradient(180deg, #0f172a, #020617);
+  color: #e5e7eb;
+}
+
+/* HEADER */
+.chat-root.solitude .chat-header {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.chat-root.solitude .chat-header h1 {
+  color: #e5e7eb;
+}
+
+.chat-root.solitude .sub {
+  color: #94a3b8;
+}
+
+/* ONLINE */
+.chat-root.solitude .dot {
+  background: #38bdf8;
+}
+
+/* NOTE */
+.chat-root.solitude .pinned-note {
+  background: rgba(56, 189, 248, 0.12);
+  border-left: 4px solid #38bdf8;
+  color: #e5e7eb;
+}
+
+/* MESSAGE */
+.chat-root.solitude .bubble {
+  background: rgba(30, 41, 59, 0.95);
+  color: #e5e7eb;
+}
+
+/* META */
+.chat-root.solitude .meta {
+  color: #94a3b8;
+}
+
+/* FOOTER */
+.chat-root.solitude .chat-footer {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.chat-root.solitude .chat-footer input {
+  background: rgba(30, 41, 59, 0.9);
+  color: #e5e7eb;
+}
+
+.chat-root.solitude .chat-footer input::placeholder {
+  color: #94a3b8;
+}
+
+.chat-root.solitude .chat-footer button {
+  background: #38bdf8;
+  color: #020617;
+}
+
+/* =====================
+   GLOBAL BACK BUTTON – SOLITUDE
+===================== */
+
+.back-button-global.solitude {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  border: none;
+  background: #38bdf8; /* bleu solitude */
+  color: #020617;
+
+  font-size: 22px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.back-button-global.solitude:hover {
+  background: #0ea5e9;
+  transform: translateX(-4px);
+}
+
+.back-button-global.solitude:active {
+  transform: scale(0.9);
+}

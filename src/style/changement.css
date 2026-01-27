@@ -1,0 +1,252 @@
+/* =====================
+   RESET / BASE
+===================== */
+
+.chat-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #a5adbe;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* =====================
+   HEADER
+===================== */
+
+.chat-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #a4aabf;
+  text-align: center;
+}
+
+.chat-header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.chat-header .sub {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+/* =====================
+   STREAM
+===================== */
+
+.chat-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =====================
+   BANNIÈRE SÉCURITÉ
+===================== */
+
+.secure-banner {
+  font-size: 12px;
+  text-align: center;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  opacity: 0.7;
+}
+
+/* =====================
+   NOTE ÉPINGLÉE
+===================== */
+
+.pinned-note {
+  background: rgba(13, 242, 204, 0.12);
+  border-left: 4px solid #0df2cc;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+.pinned-note strong {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.pinned-note p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* =====================
+   MESSAGE
+===================== */
+
+.message-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.bubble-wrapper {
+  max-width: 78%;
+  position: relative;
+}
+
+.bubble {
+  background: #ffffff;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* =====================
+   AUDIO
+===================== */
+
+audio {
+  width: 220px;
+  margin-top: 4px;
+}
+
+/* =====================
+   META
+===================== */
+
+.meta {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+/* =====================
+   ACTIONS (EDIT / DELETE)
+===================== */
+
+.actions {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  gap: 4px;
+}
+
+.actions button {
+  border: none;
+  background: rgba(0, 0, 0, 0.65);
+  color: rgb(70, 110, 168);
+  font-size: 11px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* =====================
+   FOOTER
+===================== */
+
+.chat-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #b0d4f4;
+}
+
+.chat-footer input {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #eef2f1;
+  font-size: 14px;
+}
+
+.chat-footer input:focus {
+  outline: none;
+}
+
+.chat-footer button {
+  border: none;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #0df2cc;
+  color: #0f2f28;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =====================
+   THÈMES (optionnel)
+===================== */
+
+.chat-root.burnout .pinned-note {
+  border-color: #ee2b7c;
+  background: rgba(238, 43, 124, 0.12);
+}
+
+.chat-root.rupture .pinned-note {
+  border-color: #ee2b7c;
+  background: rgba(238, 43, 124, 0.12);
+}
+
+.chat-root.solitude .pinned-note {
+  border-color: #eea62b;
+  background: rgba(238, 166, 43, 0.12);
+}
+
+.chat-root.changement .pinned-note {
+  border-color: #0df2cc;
+  background: rgba(13, 242, 204, 0.12);
+}
+
+
+/* =====================
+   GLOBAL BACK BUTTON – CHANGEMENT
+===================== */
+
+.back-button-global.changement {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  border: none;
+  background: #0df2cc; /* vert changement */
+  color: #0f2f28;
+
+  font-size: 22px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.back-button-global.changement:hover {
+  background: #0bcfb0;
+  transform: translateX(-4px);
+}
+
+.back-button-global.changement:active {
+  transform: scale(0.9);
+}

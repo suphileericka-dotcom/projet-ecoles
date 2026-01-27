@@ -1,0 +1,69 @@
+.match-root {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding: 24px;
+}
+
+.match-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.match-header p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.match-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.summary {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  font-size: 11px;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+}
+
+.danger {
+  color: #dc2626;
+}
