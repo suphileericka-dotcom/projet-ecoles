@@ -1,10 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/myStory.css";
-
-/* =====================
-   CONSTANTES
-===================== */
 
 const TAGS = [
   "burnout",
@@ -16,17 +12,14 @@ const TAGS = [
 
 type Tag = (typeof TAGS)[number];
 
-type Story = {
+type Draft = {
   id: string;
   title: string;
   body: string;
   tags: Tag[];
-  shared: boolean;
 };
 
-/* =====================
-   PAGE /story
-===================== */
+const API = "http://localhost:8000/api/Mystory";
 
 export default function MyStory() {
   const navigate = useNavigate();
@@ -35,95 +28,153 @@ export default function MyStory() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [sharePublicly, setSharePublicly] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [showDrafts, setShowDrafts] = useState(false);
 
   /* =====================
-     LOAD EXISTING STORY
+     TAGS
   ===================== */
-
-  useEffect(() => {
-    if (!token) return;
-
-    fetch("http://localhost:8000/api/story/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((story: Story | null) => {
-        if (!story) return;
-        setTitle(story.title);
-        setBody(story.body);
-        setSelectedTags(story.tags);
-        setSharePublicly(story.shared);
-      })
-      .finally(() => setLoading(false));
-  }, [token]);
 
   function toggleTag(tag: Tag) {
     setSelectedTags((prev) =>
-      prev.includes(tag)
-        ? prev.filter((t) => t !== tag)
-        : [...prev, tag]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   }
 
-  async function save() {
+  /* =====================
+     DRAFT MODAL
+  ===================== */
+
+  async function openDrafts() {
+    if (!token) return;
+
+    const res = await fetch(`${API}/drafts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.ok) {
+      setDrafts(await res.json());
+      setShowDrafts(true);
+    }
+  }
+
+  function selectDraft(draft: Draft) {
+    setCurrentDraftId(draft.id);
+    setTitle(draft.title);
+    setBody(draft.body);
+    setSelectedTags(draft.tags);
+    setShowDrafts(false);
+  }
+
+  async function deleteDraft(id: string) {
+    if (!token) return;
+    if (!confirm("Supprimer ce brouillon ?")) return;
+
+    await fetch(`${API}/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setDrafts((d) => d.filter((x) => x.id !== id));
+
+    if (currentDraftId === id) {
+      clearEditor();
+    }
+  }
+
+  /* =====================
+     SAVE
+  ===================== */
+
+  async function saveDraft() {
     if (!token) return;
 
     if (body.trim().length < 30) {
-      alert("Écris encore un peu pour pouvoir enregistrer.");
+      alert("Écris encore un peu.");
       return;
     }
 
-    const res = await fetch("http://localhost:8000/api/story", {
+    const res = await fetch(API, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        title: title.trim() || "Mon histoire",
-        body: body.trim(),
+        id: currentDraftId,
+        title,
+        body,
         tags: selectedTags,
-        shared: sharePublicly,
       }),
     });
 
     if (!res.ok) {
-      alert("Erreur lors de l’enregistrement.");
+      alert("Erreur lors de l’enregistrement");
       return;
     }
 
-    navigate("/my-space");
+    clearEditor();
+    alert("Brouillon enregistré");
   }
 
-  if (loading) {
-    return <div className="page story-page">Chargement…</div>;
+  function clearEditor() {
+    setCurrentDraftId(null);
+    setTitle("");
+    setBody("");
+    setSelectedTags([]);
   }
+
+  /* =====================
+     PUBLISH
+  ===================== */
+
+  async function publish() {
+    if (!token || !currentDraftId) {
+      alert("Sélectionne ou enregistre un brouillon d’abord.");
+      return;
+    }
+
+    const res = await fetch(`${API}/${currentDraftId}/publish`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      alert("Erreur lors de la publication");
+      return;
+    }
+
+    navigate("/story");
+  }
+
+  /* =====================
+     RENDER
+  ===================== */
 
   return (
-    <div className="page story-page">
-      <button className="back-button-global" onClick={() => navigate("/")}>
-        ←
-      </button>
+    <div className="story-editor-page">
+      <button className="back-btn" onClick={() => navigate("/")}>←</button>
 
-      <header className="page-header">
-        <h1>Ton histoire</h1>
-        <p>Sans pression. Tu peux modifier à tout moment.</p>
-      </header>
+      <div className="editor-card">
+        <header className="editor-header">
+          <h1>Mon histoire</h1>
+          <button className="drafts-btn" onClick={openDrafts}>
+            Mes brouillons
+          </button>
+        </header>
 
-      <section className="card">
-        <label className="label">Titre (optionnel)</label>
         <input
-          className="input"
+          className="title-input"
+          placeholder="Titre (optionnel)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          maxLength={80}
         />
 
-        <label className="label">Ton vécu</label>
         <textarea
-          className="textarea"
+          className="body-textarea"
+          placeholder="Écris ton histoire…"
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
@@ -132,7 +183,6 @@ export default function MyStory() {
           {TAGS.map((tag) => (
             <button
               key={tag}
-              type="button"
               className={`tag ${selectedTags.includes(tag) ? "on" : ""}`}
               onClick={() => toggleTag(tag)}
             >
@@ -141,24 +191,48 @@ export default function MyStory() {
           ))}
         </div>
 
-        <div className="row checkbox">
-          <input
-            id="share"
-            type="checkbox"
-            checked={sharePublicly}
-            onChange={(e) => setSharePublicly(e.target.checked)}
-          />
-          <label htmlFor="share">
-            Partager anonymement mon histoire
-          </label>
-        </div>
-
         <div className="actions">
-          <button className="btn primary" onClick={save}>
+          <button className="btn ghost" onClick={saveDraft}>
             Enregistrer
           </button>
+          <button className="btn primary" onClick={publish}>
+            Publier
+          </button>
         </div>
-      </section>
+      </div>
+
+      {/* MODAL BROUILLONS */}
+      {showDrafts && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Mes brouillons</h3>
+
+            {drafts.length === 0 && <p>Aucun brouillon</p>}
+
+            {drafts.map((d) => (
+              <div key={d.id} className="draft-row">
+                <button
+                  className="draft-title"
+                  onClick={() => selectDraft(d)}
+                >
+                  {d.title || "Sans titre"}
+                </button>
+
+                <button
+                  className="draft-delete"
+                  onClick={() => deleteDraft(d.id)}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
+
+            <button className="close" onClick={() => setShowDrafts(false)}>
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

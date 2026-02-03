@@ -1,13 +1,15 @@
-// frontend/src/services/auth.ts
+const API_URL = "http://localhost:8000/api/auth";
+
 export async function login(identifier: string, password: string) {
-  const res = await fetch("http://localhost:8000/api/auth/login", {
+  const res = await fetch(`${API_URL}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ identifier, password }),
   });
 
   if (!res.ok) {
-    throw new Error("Identifiants invalides");
+    const text = await res.text(); // ⚠️ pas json()
+    throw new Error(text || "Erreur de connexion");
   }
 
   return res.json();

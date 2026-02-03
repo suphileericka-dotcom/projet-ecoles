@@ -1,173 +1,145 @@
-/* =====================
-   THEME : EXPATRIATION
-===================== */
-
 .chat-root.expatriation {
-  background: #111921;
+  background: linear-gradient(#0b1320, #111921);
   color: #e6edf3;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, sans-serif;
 }
 
-/* =====================
-   HEADER
-===================== */
-
-.chat-root.expatriation header {
-  background: linear-gradient(180deg, #0f1720, #111921);
+.chat-header {
+  background: #0f1720;
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 16px;
+  text-align: center;
 }
 
-.chat-root.expatriation header h2 {
-  color: #ffffff;
+.chat-header h1 {
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.chat-root.expatriation header p {
+.chat-header .sub {
+  font-size: 11px;
   color: #93adc8;
 }
 
-/* =====================
-   INFO BANNER
-===================== */
-
-.chat-root.expatriation .secure-banner,
-.chat-root.expatriation .space-label {
-  background: rgba(255,255,255,0.04);
+.online {
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
   color: #93adc8;
-  border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* =====================
-   NOTE PERSONNELLE
-===================== */
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #308ce8;
+  border-radius: 50%;
+}
 
-.chat-root.expatriation .note-container {
-  background: rgba(48, 140, 232, 0.12);
-  border-left: 4px solid #308ce8;
+.chat-stream {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.secure-banner {
+  text-align: center;
+  font-size: 13px;
+  background: rgba(48,140,232,0.12);
+  color: #93adc8;
+  padding: 10px;
   border-radius: 12px;
 }
 
-.chat-root.expatriation .note-container h3 {
-  color: #308ce8;
+.message-row {
+  display: flex;
 }
 
-.chat-root.expatriation .note-container p {
-  color: #b9cde4;
+.bubble-wrapper {
+  max-width: 78%;
 }
 
-/* =====================
-   MESSAGES
-===================== */
-
-.chat-root.expatriation .bubble {
+.bubble {
   background: #243647;
   color: #e6edf3;
+  padding: 12px 14px;
+  border-radius: 18px;
+  font-size: 14px;
 }
 
-.chat-root.expatriation .bubble.me {
-  background: #308ce8;
-  color: #ffffff;
+.bubble.translated {
+  margin-top: 6px;
+  background: #1e3a5f;
+  border-left: 3px solid #308ce8;
+  font-size: 13px;
 }
 
-/* =====================
-   META / TIMERS
-===================== */
-
-.chat-root.expatriation .meta,
-.chat-root.expatriation .timer-display {
+.meta {
+  font-size: 11px;
+  margin-top: 4px;
   color: #93adc8;
 }
 
-/* =====================
-   ACTIONS (EDIT / DELETE)
-===================== */
+.actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
 
-.chat-root.expatriation .actions button {
+.actions button {
   background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 5px 8px;
+  color: rgb(124, 16, 16);
+  cursor: pointer;
 }
 
-.chat-root.expatriation .actions button:hover {
-  background: rgba(48,140,232,0.8);
-}
-
-/* =====================
-   FOOTER
-===================== */
-
-.chat-root.expatriation footer {
+.chat-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
   background: #0f1720;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 
-.chat-root.expatriation .message-input {
+.chat-footer input {
+  flex: 1;
+  border-radius: 999px;
+  padding: 12px 16px;
   background: #1e2a35;
-  color: #ffffff;
-  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
+  border: none;
 }
 
-.chat-root.expatriation .message-input::placeholder {
-  color: #93adc8;
-}
-
-.chat-root.expatriation .send-btn {
+.send-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: #308ce8;
-  color: #ffffff;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-/* =====================
-   MICROPHONE
-===================== */
-
-.chat-root.expatriation .microphone-container {
-  background: rgba(255,255,255,0.08);
-}
-
-.chat-root.expatriation .microphone-container:hover {
-  background: rgba(48,140,232,0.25);
-}
-
-.chat-root.expatriation .microphone-active {
-  background: #ff4d4d;
-}/* =====================
-   GLOBAL BACK BUTTON – EXPATRIATION
-===================== */
-
-.back-button-global.expatriation {
+.back-button-global {
   position: fixed;
   top: 16px;
   left: 16px;
-  z-index: 9999;
-
   width: 44px;
   height: 44px;
   border-radius: 50%;
-
+  background: #308ce8;
+  color: white;
   border: none;
-  background: #308ce8; /* bleu expatriation */
-  color: #ffffff;
-
   font-size: 22px;
-  font-weight: bold;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   cursor: pointer;
-
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-
-  transition:
-    transform 0.25s ease,
-    background 0.25s ease;
+  z-index: 9999;
 }
-
-.back-button-global.expatriation:hover {
-  background: #1d6fd6;
-  transform: translateX(-4px);
-}
-
-.back-button-global.expatriation:active {
-  transform: scale(0.9);
-}
-
-
-

@@ -2,24 +2,17 @@
 // IMPORTS
 // =====================
 
-// Hooks React
 import { useEffect, useRef, useState } from "react";
-
-// Navigation React Router
 import { useNavigate } from "react-router-dom";
-
-// Socket.io
 import { socket } from "../lib/socket";
-
-// Composants internes
 import MicButton from "./MicButton";
-
-// Styles
 import "../style/rupures.css"; // orthographe conservée
 
-/* =====================
-   TYPES
-===================== */
+import { useTranslation } from "react-i18next";
+
+// =====================
+// TYPES
+// =====================
 
 type Message = {
   id: string;
@@ -28,55 +21,49 @@ type Message = {
   audioUrl?: string;
   createdAt: number;
   editedAt?: number;
+  translatedText?: string;
+  pending?: boolean;
 };
 
-type Note = {
-  id: string;
-  text: string;
-  createdAt: number;
+type RuptureProps = {
+  isAuth: boolean;
 };
 
-/* =====================
-   CONSTANTES
-===================== */
+// =====================
+// CONSTANTES
+// =====================
 
 const ROOM = "rupture";
 const EDIT_WINDOW = 20 * 60 * 1000;
-const NOTE_DURATION = 24 * 60 * 60 * 1000;
-const NOTE_KEY = "rupture_note";
 
-/* =====================
-   COMPONENT
-===================== */
+// =====================
+// COMPONENT
+// =====================
 
-export default function Rupture() {
+export default function Rupture({ isAuth }: RuptureProps) {
   const navigate = useNavigate();
 
-  /* =====================
-     STATES
-  ===================== */
+  const { i18n } = useTranslation();
+
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [note, setNote] = useState<Note | null>(null);
   const [onlineCount, setOnlineCount] = useState(0);
+  const [activeMessage, setActiveMessage] = useState<string | null>(null);
 
-  /* =====================
-     REFS & USER
-  ===================== */
-
+  const userId = isAuth ? localStorage.getItem("userId") : null;
   const streamRef = useRef<HTMLDivElement>(null);
-  const userId = localStorage.getItem("userId");
 
-  /* =====================
-     SOCKET
-  ===================== */
+  // =====================
+  // SOCKET
+  // =====================
 
   useEffect(() => {
-    if (!userId) return;
+    if (!isAuth || !userId) return;
 
-    socket.connect();
+    if (!socket.connected) socket.connect();
+
     socket.emit("join-room", { room: ROOM, userId });
 
     socket.on("online-count", ({ room, count }) => {
@@ -84,49 +71,37 @@ export default function Rupture() {
     });
 
     return () => {
-      socket.emit("leave-room", { room: ROOM, userId });
       socket.off("online-count");
+      socket.emit("leave-room", { room: ROOM, userId });
+      socket.disconnect();
     };
-  }, [userId]);
+  }, [isAuth, userId]);
 
-  /* =====================
-     LOAD MESSAGES
-  ===================== */
+  // =====================
+  // LOAD MESSAGES
+  // =====================
 
   useEffect(() => {
     fetch(`http://localhost:8000/api/messages?room=${ROOM}`)
-      .then((r) => r.json())
-      .then((data) =>
+      .then((res) => res.json())
+      .then((data) => {
         setMessages(
           data.map((m: any) => ({
             id: m.id,
-            type: "text",
-            text: m.content,
+            type: m.audio_path ? "voice" : "text",
+            text: m.content ?? "",
+            audioUrl: m.audio_path
+              ? `http://localhost:8000/uploads/audio/${m.audio_path}`
+              : undefined,
             createdAt: m.created_at,
           }))
-        )
-      );
+        );
+      });
   }, []);
 
-  /* =====================
-     LOAD NOTE (24H)
-  ===================== */
-
-  useEffect(() => {
-    const saved = localStorage.getItem(NOTE_KEY);
-    if (!saved) return;
-
-    const parsed: Note = JSON.parse(saved);
-    if (Date.now() - parsed.createdAt < NOTE_DURATION) {
-      setNote(parsed);
-    } else {
-      localStorage.removeItem(NOTE_KEY);
-    }
-  }, []);
-
-  /* =====================
-     AUTOSCROLL
-  ===================== */
+  // =====================
+  // AUTOSCROLL
+  // =====================
 
   useEffect(() => {
     streamRef.current?.scrollTo({
@@ -135,12 +110,16 @@ export default function Rupture() {
     });
   }, [messages]);
 
-  /* =====================
-     HELPERS
-  ===================== */
+  // =====================
+  // HELPERS
+  // =====================
 
   function canEdit(m: Message) {
-    return m.type === "text" && Date.now() - m.createdAt <= EDIT_WINDOW;
+    return (
+      isAuth &&
+      m.type === "text" &&
+      Date.now() - m.createdAt <= EDIT_WINDOW
+    );
   }
 
   function formatTime(ts: number) {
@@ -150,13 +129,14 @@ export default function Rupture() {
     });
   }
 
-  /* =====================
-     SEND MESSAGE
-  ===================== */
+  // =====================
+  // ACTIONS
+  // =====================
 
   async function handleSend() {
-    if (!userId || !input.trim()) return;
+    if (!isAuth || !userId || !input.trim()) return;
 
+    // EDIT MESSAGE
     if (editingId) {
       setMessages((msgs) =>
         msgs.map((m) =>
@@ -170,14 +150,11 @@ export default function Rupture() {
       return;
     }
 
+    // SEND TEXT MESSAGE
     const res = await fetch("http://localhost:8000/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        room: ROOM,
-        userId,
-        content: input,
-      }),
+      body: JSON.stringify({ room: ROOM, userId, content: input }),
     });
 
     const saved = await res.json();
@@ -188,78 +165,189 @@ export default function Rupture() {
         id: saved.id,
         type: "text",
         text: saved.content,
-        createdAt: saved.created_at,
+        createdAt: saved.createdAt ?? Date.now(),
       },
     ]);
 
     setInput("");
   }
 
-  /* =====================
-     AUDIO
-  ===================== */
+  async function handleDelete(id: string) {
+    if (!userId) return;
+
+    await fetch(
+      `http://localhost:8000/api/messages/${id}?userId=${userId}`,
+      { method: "DELETE" }
+    );
+
+    setMessages((msgs) => msgs.filter((m) => m.id !== id));
+  }
+
+  
+ async function translateMessage(m: Message) {
+  if (!m.text) return;
+
+  try {
+    const lang = localStorage.getItem("lang") || "fr";
+
+    const res = await fetch("http://localhost:8000/api/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: m.text,
+        target: lang,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Backend translation failed");
+    }
+
+    const data = await res.json();
+
+    setMessages((msgs) =>
+      msgs.map((msg) =>
+        msg.id === m.id
+          ? { ...msg, translatedText: data.translatedText }
+          : msg
+      )
+    );
+  } catch (err) {
+    console.error("TRANSLATION ERROR:", err);
+  }
+}
+
+
+
+  // =====================
+  // VOICE (même logique que Burnout)
+  // =====================
 
   function onVoiceRecorded(audioUrl: string) {
-    if (!userId) return;
+    if (!isAuth) return;
 
     setMessages((msgs) => [
       ...msgs,
       {
-        id: `${Date.now()}-${Math.random()}`,
+        id: `local-${Date.now()}`,
         type: "voice",
         audioUrl,
         createdAt: Date.now(),
+        pending: true,
       },
     ]);
   }
 
-  /* =====================
-     RENDER
-  ===================== */
+  function deleteLocalVoice(id: string) {
+    setMessages((msgs) => msgs.filter((m) => m.id !== id));
+  }
+
+  async function sendVoice(m: Message) {
+    if (!m.audioUrl || !userId) return;
+
+    const blob = await fetch(m.audioUrl).then((r) => r.blob());
+
+    const formData = new FormData();
+    formData.append("audio", blob);
+    formData.append("room", ROOM);
+    formData.append("userId", userId);
+
+    const res = await fetch("http://localhost:8000/api/messages/audio", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    setMessages((msgs) =>
+      msgs.map((msg) =>
+        msg.id === m.id
+          ? {
+              ...msg,
+              id: data.id,
+              audioUrl: data.audioUrl,
+              createdAt: data.createdAt,
+              pending: false,
+            }
+          : msg
+      )
+    );
+  }
+
+  // =====================
+  // RENDER
+  // =====================
 
   return (
     <div className="chat-root rupture">
-      {/* RETOUR */}
       <button
         className="back-button-global rupture"
         onClick={() => navigate("/")}
-        aria-label="Retour à l'accueil"
       >
         ←
       </button>
 
-      {/* HEADER */}
       <header className="chat-header">
         <h1>Rupture</h1>
-        <div className="online">
+        <span className="online">
           <span className="dot" /> {onlineCount} en ligne
-        </div>
+        </span>
         <span className="sub">
           Un espace bienveillant pour se reconstruire
         </span>
       </header>
 
-      {/* MESSAGES */}
       <main className="chat-stream" ref={streamRef}>
-        {note && (
-          <div className="pinned-note">
-            <strong>Ma note (24h)</strong>
-            <p>{note.text}</p>
-          </div>
-        )}
+        <div className="secure-banner">
+          Espace anonyme et respectueux.
+        </div>
 
         {messages.map((m) => (
           <div key={m.id} className="message-row">
-            <div className="bubble-wrapper">
-              {m.type === "text" && <div className="bubble">{m.text}</div>}
-              {m.type === "voice" && <audio controls src={m.audioUrl} />}
+            <div
+              className="bubble-wrapper"
+              onClick={() =>
+                setActiveMessage(activeMessage === m.id ? null : m.id)
+              }
+            >
+              {m.type === "text" && (
+                <>
+                  <div className="bubble">{m.text}</div>
+                  {m.translatedText && (
+                    <div className="bubble translated">
+                      {m.translatedText}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {m.type === "voice" && (
+                <div className="bubble">
+                  <audio controls src={m.audioUrl} />
+
+                  {m.pending && (
+                    <div className="actions">
+                      <button onClick={() => sendVoice(m)}>
+                        Envoyer
+                      </button>
+                      <button
+                        onClick={() => deleteLocalVoice(m.id)}
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="meta">
                 <span>{formatTime(m.createdAt)}</span>
                 {m.editedAt && <span> (modifié)</span>}
               </div>
 
-              {canEdit(m) && (
+              {canEdit(m) && activeMessage === m.id && (
                 <div className="actions">
                   <button
                     onClick={() => {
@@ -269,6 +357,12 @@ export default function Rupture() {
                   >
                     ✏️
                   </button>
+                  <button onClick={() => handleDelete(m.id)}>
+                    🗑
+                  </button>
+                  <button onClick={() => translateMessage(m)}>
+                    🌍
+                  </button>
                 </div>
               )}
             </div>
@@ -276,24 +370,24 @@ export default function Rupture() {
         ))}
       </main>
 
-      {/* FOOTER */}
       <footer className="chat-footer">
         <MicButton onVoiceRecorded={onVoiceRecorded} />
 
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder={
-            userId
-              ? "Exprimez ce que vous ressentez…"
-              : "Connectez-vous pour participer"
+            isAuth ? "Exprime ce que tu ressens…" : "Connexion requise"
           }
-          disabled={!userId}
+          disabled={!isAuth}
         />
 
-        <button onClick={handleSend} disabled={!userId}>
-          {editingId ? "Modifier" : "Envoyer"}
+        <button
+          className="send-icon"
+          onClick={handleSend}
+          disabled={!isAuth}
+        >
+          ➤
         </button>
       </footer>
     </div>

@@ -1,179 +1,118 @@
+// =====================
+// IMPORTS
+// =====================
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../style/login.css";
 
+// Services
 import { login } from "../services/auth";
 
-/**
- * Page Login
- * Rôle :
- * - authentifier l’utilisateur
- * - récupérer token + userId depuis le backend
- * - stocker la session
- * - rediriger vers l’accueil connecté
- */
-export default function Login() {
+// Hooks
+import { useLang } from "../hooks/useLang";
+
+// Styles
+import "../style/login.css";
+
+// =====================
+// TYPES
+// =====================
+
+type LoginProps = {
+  setIsAuth: (value: boolean) => void;
+};
+
+// =====================
+// COMPONENT
+// =====================
+
+export default function Login({ setIsAuth }: LoginProps) {
   const navigate = useNavigate();
+  const { t } = useLang();
 
-  /* =====================
-     STATES
-  ===================== */
-
-  const [identifier, setIdentifier] = useState(""); // email OU username
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const [errorIdentifier, setErrorIdentifier] = useState<string | null>(null);
-  const [errorPassword, setErrorPassword] = useState<string | null>(null);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
 
-  /* =====================
-     LOGIN HANDLER
-  ===================== */
-
   async function handleLogin() {
-    // reset erreurs
-    setErrorIdentifier(null);
-    setErrorPassword(null);
     setErrorGlobal(null);
 
-    // validations simples
-    if (!identifier) {
-      setErrorIdentifier("Email ou nom d'utilisateur requis");
-      return;
-    }
-
-    if (!password) {
-      setErrorPassword("Mot de passe requis");
+    if (!identifier || !password) {
+      setErrorGlobal(t("emailOrUsername") + " / " + t("password"));
       return;
     }
 
     try {
       setLoading(true);
 
-      /**
-       * 🔐 APPEL BACKEND VIA SERVICE
-       * (plus de fetch direct ici)
-       */
       const data = await login(identifier, password);
 
-      /* =====================
-         SESSION
-      ===================== */
-
-      // JWT
+      // SESSION
       localStorage.setItem("authToken", data.token);
-
-      // ID utilisateur (clé centrale de ton app)
       localStorage.setItem("userId", data.user.id);
+
+      // Langue utilisateur (depuis backend)
+      if (data.user.language) {
+        localStorage.setItem("language", data.user.language);
+      }
 
       if (remember) {
         localStorage.setItem("rememberMe", "true");
-      } else {
-        localStorage.removeItem("rememberMe");
       }
 
-      // redirection vers l’accueil connecté
+      setIsAuth(true);
       navigate("/");
     } catch (err: any) {
       setErrorGlobal(
-        err?.message || "Identifiants incorrects ou serveur indisponible"
+        err?.message || "Erreur de connexion"
       );
     } finally {
       setLoading(false);
     }
   }
 
-  /* =====================
-     RENDER
-  ===================== */
-
   return (
     <div className="login-page">
       <div className="login-container">
-        {/* HEADER */}
         <div className="login-header">
           <button onClick={() => navigate(-1)}>←</button>
-          <h1>Connexion</h1>
+          <h1>{t("login")}</h1>
         </div>
 
-        {/* ILLUSTRATION */}
-        <div className="login-illustration">
-          <span className="material-symbols-outlined">
-            lock
-          </span>
-        </div>
+        <h2>{t("welcome")}</h2>
 
-        <h2 className="login-title">Bienvenue</h2>
-        <p className="login-subtitle">
-          Connectez-vous pour accéder à la communauté.
-        </p>
+        {errorGlobal && <div className="login-error">{errorGlobal}</div>}
 
-        {errorGlobal && (
-          <div className="login-error global">{errorGlobal}</div>
-        )}
+        <input
+          placeholder={t("emailOrUsername")}
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          disabled={loading}
+        />
 
-        <div className="login-form">
-          <div className="login-field">
-            <label>Email ou nom d'utilisateur</label>
-            <input
-              className="login-input"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              disabled={loading}
-            />
-            {errorIdentifier && (
-              <div className="login-error">{errorIdentifier}</div>
-            )}
-          </div>
+        <input
+          type="password"
+          placeholder={t("password")}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
 
-          <div className="login-field">
-            <label>Mot de passe</label>
-            <input
-              type="password"
-              className="login-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
-            {errorPassword && (
-              <div className="login-error">{errorPassword}</div>
-            )}
-          </div>
-
-          <div className="login-options">
-            <label>
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                disabled={loading}
-              />{" "}
-              Se souvenir de moi
-            </label>
-
-            {/* future feature */}
-            <button type="button" disabled>
-              Mot de passe oublié ?
-            </button>
-          </div>
-
-          <button
-            className="login-button"
+        <label>
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
             disabled={loading}
-            onClick={handleLogin}
-          >
-            {loading ? "Connexion..." : "Se connecter"}
-          </button>
-        </div>
+          />
+          {t("rememberMe")}
+        </label>
 
-        <div className="login-footer">
-          Pas encore de compte ?{" "}
-          <button onClick={() => navigate("/register")}>
-            Créer un compte
-          </button>
-        </div>
+        <button onClick={handleLogin} disabled={loading}>
+          {loading ? "…" : t("login")}
+        </button>
       </div>
     </div>
   );

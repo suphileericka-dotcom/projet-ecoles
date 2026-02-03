@@ -1,20 +1,31 @@
+// =====================
+// IMPORTS
+// =====================
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+// Hooks
+import { useLang } from "../hooks/useLang";
+
+// Styles
 import "../style/register.css";
 
-/**
- * Page Register
- * Rôle :
- * - créer un compte utilisateur
- * - récupérer un token + userId depuis le backend
- * - rediriger vers l'accueil (hub connecté)
- */
-export default function Register() {
-  const navigate = useNavigate();
+// =====================
+// TYPES
+// =====================
 
-  /* =====================
-     STATE FORMULAIRE
-  ===================== */
+type RegisterProps = {
+  setIsAuth: (value: boolean) => void;
+};
+
+// =====================
+// COMPONENT
+// =====================
+
+export default function Register({ setIsAuth }: RegisterProps) {
+  const navigate = useNavigate();
+  const { t } = useLang();
 
   const [form, setForm] = useState({
     username: "",
@@ -24,14 +35,16 @@ export default function Register() {
     city: "",
     country: "FR",
     situation: "",
+    language: localStorage.getItem("language") || "fr",
     terms: false,
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /* =====================
-     UPDATE INPUTS
-  ===================== */
+  // =====================
+  // HANDLERS
+  // =====================
 
   function update(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -47,173 +60,178 @@ export default function Register() {
     }));
   }
 
-  /* =====================
-     SUBMIT FORM
-  ===================== */
+  // 🔥 changement de langue EN LIVE
+  function changeLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
+    const lang = e.target.value;
+
+    setForm((f) => ({
+      ...f,
+      language: lang,
+    }));
+
+    // langue globale immédiate
+    localStorage.setItem("language", lang);
+
+    // force React à re-render (simple & efficace)
+    window.dispatchEvent(new Event("storage"));
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
 
-    // Sécurité basique côté client
     if (form.password !== form.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      setError("Les mots de passe ne correspondent pas");
       return;
     }
 
     if (!form.terms) {
-      alert("Vous devez accepter les conditions d’utilisation");
+      setError("Vous devez accepter les conditions");
       return;
     }
 
-    setLoading(true);
-
     try {
-      const res = await fetch(
-        "http://localhost:8000/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: form.username,
-            email: form.email,
-            password: form.password,
-            city: form.city,
-            country: form.country,
-            situation: form.situation,
-          }),
-        }
-      );
+      setLoading(true);
+
+      const res = await fetch("http://localhost:8000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Erreur lors de l’inscription");
+        setError(data.error || "Erreur lors de l’inscription");
         return;
       }
 
-      /* =====================
-         SESSION
-      ===================== */
-
-      // Token JWT
+      // SESSION
       localStorage.setItem("authToken", data.token);
-
-      // ID utilisateur (utilisé partout dans ton app)
       localStorage.setItem("userId", data.user.id);
+      localStorage.setItem("language", form.language);
 
-      // Redirection vers l'accueil (hub connecté)
+      setIsAuth(true);
       navigate("/");
-    } catch (err) {
-      alert("Erreur réseau. Réessaie plus tard.");
+    } catch {
+      setError("Impossible de contacter le serveur");
     } finally {
       setLoading(false);
     }
   }
 
-  /* =====================
-     RENDER
-  ===================== */
+  // =====================
+  // RENDER
+  // =====================
 
   return (
-    <div className="auth-root">
-      {/* Bouton retour */}
-      <button className="back-button" onClick={() => navigate(-1)}>
-        ←
-      </button>
+    <div className="register-page">
+      <div className="register-container">
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          ←
+        </button>
 
-      <h1>Créer un compte</h1>
-      <p className="subtitle">
-        Rejoignez la communauté de manière sécurisée et confidentielle
-      </p>
+        <h1>{t("register")}</h1>
+        <p className="subtitle">{t("welcome")}</p>
 
-      <form className="auth-form" onSubmit={submit}>
-        <input
-          name="username"
-          placeholder="Nom d'utilisateur anonyme"
-          value={form.username}
-          onChange={update}
-          required
-        />
+        {error && <div className="register-error">{error}</div>}
 
-        <input
-          name="email"
-          type="email"
-          placeholder="Adresse email"
-          value={form.email}
-          onChange={update}
-          required
-        />
-
-        <input
-          name="password"
-          type="password"
-          placeholder="Mot de passe"
-          value={form.password}
-          onChange={update}
-          required
-        />
-
-        <input
-          name="confirmPassword"
-          type="password"
-          placeholder="Confirmer le mot de passe"
-          value={form.confirmPassword}
-          onChange={update}
-          required
-        />
-
-        <input
-          name="city"
-          placeholder="Ville"
-          value={form.city}
-          onChange={update}
-        />
-
-        <select name="country" value={form.country} onChange={update}>
-          <option value="FR">France</option>
-          <option value="BE">Belgique</option>
-          <option value="CH">Suisse</option>
-          <option value="CA">Canada</option>
-          <option value="LU">Luxembourg</option>
-          <option value="MC">Monaco</option>
-          <option value="DZ">Algérie</option>
-          <option value="MA">Maroc</option>
-          <option value="TN">Tunisie</option>
-        </select>
-
-        <select
-          name="situation"
-          value={form.situation}
-          onChange={update}
-          required
-        >
-          <option value="">Situation actuelle</option>
-          <option value="burnout">Burnout</option>
-          <option value="rupture">Rupture</option>
-          <option value="solitude">Solitude</option>
-          <option value="expatriation">Expatriation</option>
-          <option value="changement">Changement</option>
-        </select>
-
-        <label className="checkbox">
+        <form onSubmit={submit}>
           <input
-            type="checkbox"
-            name="terms"
-            checked={form.terms}
+            name="username"
+            placeholder={t("emailOrUsername")}
+            value={form.username}
+            onChange={update}
+            required
+          />
+
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={update}
+            required
+          />
+
+          <input
+            name="password"
+            type="password"
+            placeholder={t("password")}
+            value={form.password}
+            onChange={update}
+            required
+          />
+
+          <input
+            name="confirmPassword"
+            type="password"
+            placeholder={t("password")}
+            value={form.confirmPassword}
+            onChange={update}
+            required
+          />
+
+          <input
+            name="city"
+            placeholder="Ville"
+            value={form.city}
             onChange={update}
           />
-          J’accepte les conditions d’utilisation
-        </label>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Création…" : "Créer mon compte"}
-        </button>
-      </form>
+          <select name="country" value={form.country} onChange={update}>
+            <option value="FR">France</option>
+            <option value="BE">Belgique</option>
+            <option value="CH">Suisse</option>
+            <option value="CA">Canada</option>
+          </select>
 
-      <p className="auth-footer">
-        Vous avez déjà un compte ?{" "}
-        <Link to="/login">Se connecter</Link>
-      </p>
+          {/* 🌍 LANGUE (LIVE) */}
+          <select
+            name="language"
+            value={form.language}
+            onChange={changeLanguage}
+          >
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="it">🇮🇹 Italiano</option>
+          </select>
+
+          <select
+            name="situation"
+            value={form.situation}
+            onChange={update}
+            required
+          >
+            <option value="">{t("welcome")}</option>
+            <option value="burnout">{t("burnoutTitle")}</option>
+            <option value="rupture">{t("ruptureTitle")}</option>
+            <option value="solitude">{t("solitudeTitle")}</option>
+            <option value="expatriation">{t("expatriationTitle")}</option>
+            <option value="changement">{t("changementTitle")}</option>
+          </select>
+
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              name="terms"
+              checked={form.terms}
+              onChange={update}
+            />
+            J’accepte les conditions
+          </label>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "…" : t("register")}
+          </button>
+        </form>
+
+        <p className="footer">
+          Déjà un compte ? <Link to="/login">{t("login")}</Link>
+        </p>
+      </div>
     </div>
   );
 }

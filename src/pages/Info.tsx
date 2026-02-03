@@ -1,5 +1,5 @@
 // =====================
-// PAGE INFO — VERSION ALIGNÉE AU STYLE EXISTANT
+// PAGE INFO
 // =====================
 
 import { useNavigate } from "react-router-dom";
@@ -25,84 +25,107 @@ export default function Info() {
       ===================== */}
       <section className="info-hero">
         <div className="info-icon">💬</div>
-        <h2>Espace de soutien</h2>
+        <h2>Espace de soutien anonyme</h2>
         <p>
-          Un lieu anonyme pour partager ce que vous traversez,
-          sans jugement.
+          Un lieu sécurisé pour écrire, échanger et partager ce que vous
+          traversez, sans jugement et dans le respect.
         </p>
       </section>
 
       {/* =====================
-          MISSION
+          LANGUES & TRADUCTION
       ===================== */}
       <section className="info-card">
-        <h3>🌱 Pourquoi cette application ?</h3>
+        <h3>Langues et traduction</h3>
         <p>
-          Cette application a été créée pour offrir un espace
-          simple, humain et respectueux aux personnes
-          traversant des moments difficiles.
+          L’interface de l’application n’est pas encore entièrement traduite
+          dans toutes les langues.
         </p>
         <p>
-          Ici, vous pouvez parler, écrire, lire et échanger
-          en toute anonymat, sans pression ni obligation.
+          En revanche, les messages échangés dans les espaces de discussion
+          peuvent être traduits afin de faciliter les échanges
+          entre utilisateurs.
         </p>
       </section>
 
       {/* =====================
-          POUR QUI
+          DISCUSSIONS
       ===================== */}
       <section className="info-card">
-        <h3>👤 À qui s’adresse cet espace</h3>
+        <h3>Fonctionnement des discussions</h3>
         <ul className="info-list">
-          <li>Personnes en situation de burnout</li>
-          <li>Personnes vivant une rupture</li>
-          <li>Personnes confrontées à la solitude</li>
-          <li>Personnes expatriées</li>
-          <li>Personnes en période de changement de vie</li>
+          <li>
+            Chaque espace de discussion peut accueillir jusqu’à environ
+            1500 participants.
+          </li>
+          <li>
+            Les messages sont temporaires et sont automatiquement supprimés
+            après 24 heures.
+          </li>
+          <li>
+            Les échanges se font principalement en groupe, autour de thématiques
+            communes.
+          </li>
         </ul>
       </section>
 
       {/* =====================
-          CE QUE L'APP PERMET
+          MATCHS & CONNEXIONS
       ===================== */}
       <section className="info-card">
-        <h3>🧩 Ce que vous pouvez faire ici</h3>
-        <ul className="info-list">
-          <li>Raconter votre histoire personnelle</li>
-          <li>Échanger dans des espaces thématiques</li>
-          <li>Lire et commenter les histoires des autres</li>
-          <li>Découvrir des personnes vivant des expériences similaires</li>
-          <li>Tenir un journal personnel guidé</li>
-        </ul>
-      </section>
+        <h3>Connexions et correspondances</h3>
+        <p>
+          L’application propose des correspondances entre personnes traversant
+          des situations similaires afin de favoriser des échanges plus
+          pertinents et humains.
+        </p>
+        <p>
+          Il est possible d’échanger en privé en dehors des discussions de
+          groupe. Cette fonctionnalité est optionnelle et payante.
+        </p>
 
-      {/* =====================
-          THÉMATIQUES
-      ===================== */}
-      <section className="info-card">
-        <h3>🗂 Espaces disponibles</h3>
-        <div className="themes-grid">
-          <div>Burnout</div>
-          <div>Solitude</div>
-          <div>Rupture</div>
-          <div>Expatriation</div>
-          <div>Changement</div>
+        <div className="pricing-box">
+          <h4>Discussion privée</h4>
+          <div className="price">4,99 €</div>
+          <p>
+            Accès à une conversation privée avec une personne de votre choix.
+          </p>
         </div>
       </section>
 
       {/* =====================
-          LIMITES & RESPONSABILITÉ
+          HISTOIRES & ANONYMAT
       ===================== */}
       <section className="info-card">
-        <h3>⚠️ Important à savoir</h3>
+        <h3>Histoires et anonymat</h3>
+        <ul className="info-list">
+          <li>
+            Vous pouvez écrire et partager votre histoire personnelle de manière
+            totalement anonyme.
+          </li>
+          <li>
+            Les histoires publiées peuvent être likées et commentées par les
+            autres utilisateurs.
+          </li>
+          <li>
+            Aucune information personnelle n’est rendue publique.
+          </li>
+        </ul>
+      </section>
+
+      {/* =====================
+          RESPONSABILITÉ
+      ===================== */}
+      <section className="info-card warning">
+        <h3>Responsabilité</h3>
         <p>
-          Cette application n’est pas un service médical
-          et ne remplace pas un professionnel de santé.
+          Cette application n’est pas un service médical et ne remplace en aucun
+          cas l’avis ou l’accompagnement d’un professionnel de santé.
         </p>
         <p>
-          En cas de détresse grave ou de danger immédiat,
-          il est essentiel de contacter un proche,
-          un professionnel ou les services d’urgence.
+          En cas de détresse grave ou de danger immédiat, il est fortement
+          recommandé de contacter un proche, un professionnel ou les services
+          d’urgence.
         </p>
       </section>
 
@@ -110,12 +133,8 @@ export default function Info() {
           FOOTER
       ===================== */}
       <footer className="info-footer">
-        <button onClick={() => navigate("/")}>
-          Revenir à l’accueil
-        </button>
-        <p>
-          Anonymat • Bienveillance • Respect
-        </p>
+        <button onClick={() => navigate("/")}>Revenir à l’accueil</button>
+        <p>Anonymat • Bienveillance • Respect</p>
       </footer>
     </div>
   );

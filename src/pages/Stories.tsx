@@ -1,183 +1,120 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../style/stories.css";
-
-/* =====================
-   TYPES
-===================== */
 
 type Story = {
   id: string;
   title: string;
   body: string;
   tags: string[];
-  created_at: string;
+  user_id: string;
+  author_avatar?: string;
+  likes: number;
 };
-
-type Comment = {
-  id: string;
-  body: string;
-  created_at: string;
-};
-
-/* =====================
-   PAGE /stories
-===================== */
 
 export default function Stories() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const openId = params.get("open");
   const token = localStorage.getItem("authToken");
+  const myUserId = localStorage.getItem("userId");
 
   const [stories, setStories] = useState<Story[]>([]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentInput, setCommentInput] = useState("");
+  const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState("");
 
   /* =====================
-     LOAD STORIES
+     LOAD STORIES (SEARCH + TAG)
   ===================== */
-
   useEffect(() => {
-    const url = tagFilter
-      ? `http://localhost:8000/api/stories?tag=${tagFilter}`
-      : "http://localhost:8000/api/stories";
+    const params = new URLSearchParams();
+    if (search) params.append("q", search);
+    if (tagFilter) params.append("tag", tagFilter);
 
-    fetch(url)
+    fetch(`http://localhost:8000/api/stories?${params}`)
       .then((r) => r.json())
       .then(setStories);
-  }, [tagFilter]);
+  }, [search, tagFilter]);
 
-  /* =====================
-     OPEN STORY
-  ===================== */
-
-  useEffect(() => {
-    if (!openId) return;
-
-    fetch(`http://localhost:8000/api/stories/${openId}`)
-      .then((r) => r.json())
-      .then(setActiveStory);
-  }, [openId]);
-
-  /* =====================
-     LOAD COMMENTS
-  ===================== */
-
-  useEffect(() => {
-    if (!activeStory) return;
-
-    fetch(`http://localhost:8000/api/stories/${activeStory.id}/comments`)
-      .then((r) => r.json())
-      .then(setComments);
-  }, [activeStory]);
-
-  async function addComment() {
-    if (!token || !activeStory) return;
-    if (commentInput.trim().length < 2) return;
-
-    const res = await fetch(
-      `http://localhost:8000/api/stories/${activeStory.id}/comments`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ body: commentInput }),
-      }
-    );
-
-    if (!res.ok) return;
-
-    setCommentInput("");
-    const updated = await res.json();
-    setComments(updated);
-  }
-
-  function joinDiscussion(story: Story) {
-    const tag = story.tags[0];
-    if (tag) navigate(`/chat/${tag}`);
+  function likeStory(id: string) {
+    if (!token) return;
+    fetch(`http://localhost:8000/api/stories/${id}/like`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
   }
 
   return (
     <div className="page stories-page">
-      <button className="back-button-global" onClick={() => navigate("/")}>
-        ←
-      </button>
+      <button className="back-button-global" onClick={() => navigate("/")}>←</button>
 
       <header className="page-header">
-        <h1>Histoires des autres</h1>
-        <p>Des récits humains, anonymes et réels.</p>
+        <h1>Histoires</h1>
+        <p>Des récits anonymes</p>
       </header>
 
-      <section className="toolbar">
-        <div className="filters">
-          <button onClick={() => setTagFilter("")}>Tout</button>
-          {["burnout", "solitude", "rupture", "expatriation", "changement"].map(
-            (t) => (
-              <button key={t} onClick={() => setTagFilter(t)}>
-                {t}
-              </button>
-            )
-          )}
-        </div>
+      {/* SEARCH */}
+      <div className="search-bar">
+        <input
+          placeholder="Rechercher par titre ou hashtag"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-        <button className="btn primary" onClick={() => navigate("/story")}>
-          Écrire mon histoire
-        </button>
-      </section>
+      {/* TAG FILTER */}
+      <div className="filters">
+        {["burnout", "solitude", "rupture", "expatriation", "changement"].map(t => (
+          <button
+            key={t}
+            className={tagFilter === t ? "active" : ""}
+            onClick={() => setTagFilter(t)}
+          >
+            #{t}
+          </button>
+        ))}
+      </div>
 
       <div className="layout">
+        {/* LIST */}
         <div className="list">
           {stories.map((s) => (
             <div
               key={s.id}
-              className="story-tile"
+              className={`story-tile ${s.user_id === myUserId ? "mine" : ""}`}
               onClick={() => setActiveStory(s)}
             >
-              <strong>{s.title}</strong>
-              <div className="tile-tags">{s.tags.join(", ")}</div>
+              <div className="tile-head">
+                <img
+                  src={s.author_avatar || "/avatar.png"}
+                  className="avatar"
+                />
+                <strong>{s.title}</strong>
+              </div>
+              <div className="tile-tags">{s.tags.map(t => `#${t}`).join(" ")}</div>
             </div>
           ))}
         </div>
 
+        {/* READER */}
         <div className="reader">
           {!activeStory ? (
-            <p>Choisis une histoire.</p>
+            <p>Sélectionne une histoire.</p>
           ) : (
             <>
               <h2>{activeStory.title}</h2>
               <p>{activeStory.body}</p>
 
-              <button onClick={() => joinDiscussion(activeStory)}>
-                Rejoindre la discussion
-              </button>
+              <div className="reader-actions">
+                <button onClick={() => likeStory(activeStory.id)}>
+                  🤍 Soutenir ({activeStory.likes})
+                </button>
 
-              <div className="comments">
-                <h3>Commentaires</h3>
-
-                {comments.map((c) => (
-                  <div key={c.id} className="comment">
-                    <div>{c.body}</div>
-                    <small>
-                      {new Date(c.created_at).toLocaleString()}
-                    </small>
-                  </div>
-                ))}
-
-                {token && (
-                  <>
-                    <textarea
-                      value={commentInput}
-                      onChange={(e) => setCommentInput(e.target.value)}
-                      placeholder="Message bienveillant…"
-                    />
-                    <button onClick={addComment}>Publier</button>
-                  </>
-                )}
+                <button
+                  className="ghost"
+                  onClick={() => navigate(`/chat/${activeStory.tags[0]}`)}
+                >
+                  Discussion liée
+                </button>
               </div>
             </>
           )}
