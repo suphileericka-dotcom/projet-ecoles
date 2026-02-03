@@ -42,8 +42,8 @@ const EDIT_WINDOW = 20 * 60 * 1000;
 export default function Burnout({ isAuth }: BurnoutProps) {
   const navigate = useNavigate();
 
-  const { i18n } = useTranslation();
-
+  // ✅ Hook utilisé sans variable inutile (TS6133 FIX)
+  useTranslation();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -92,7 +92,7 @@ export default function Burnout({ isAuth }: BurnoutProps) {
             audioUrl: m.audio_path
               ? `http://localhost:8000/uploads/audio/${m.audio_path}`
               : undefined,
-            createdAt: m.created_at, // ✅ FIX Invalid Date
+            createdAt: m.created_at,
           }))
         );
       });
@@ -180,47 +180,37 @@ export default function Burnout({ isAuth }: BurnoutProps) {
     setMessages((msgs) => msgs.filter((m) => m.id !== id));
   }
 
-  // 🌍 Traduction (placeholder SAFE)
+  // 🌍 Traduction
   async function translateMessage(m: Message) {
-  if (!m.text) return;
+    if (!m.text || m.translatedText) return;
 
-  try {
-    const lang = localStorage.getItem("lang") || "fr";
+    try {
+      const lang = localStorage.getItem("lang") || "fr";
 
-    const res = await fetch("http://localhost:8000/api/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: m.text,
-        target: lang,
-      }),
-    });
+      const res = await fetch("http://localhost:8000/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: m.text,
+          target: lang,
+        }),
+      });
 
-    if (!res.ok) {
-      throw new Error("Backend translation failed");
+      if (!res.ok) throw new Error("Backend translation failed");
+
+      const data = await res.json();
+
+      setMessages((msgs) =>
+        msgs.map((msg) =>
+          msg.id === m.id
+            ? { ...msg, translatedText: data.translatedText }
+            : msg
+        )
+      );
+    } catch (err) {
+      console.error("TRANSLATION ERROR:", err);
     }
-
-    const data = await res.json();
-
-    setMessages((msgs) =>
-      msgs.map((msg) =>
-        msg.id === m.id
-          ? { ...msg, translatedText: data.translatedText }
-          : msg
-      )
-    );
-  } catch (err) {
-    console.error("TRANSLATION ERROR:", err);
   }
-
-  if (!m.text || m.translatedText) return;
-}
-
-
-
-
 
   function onVoiceRecorded(audioUrl: string) {
     if (!isAuth) return;
@@ -317,7 +307,6 @@ export default function Burnout({ isAuth }: BurnoutProps) {
               {m.type === "voice" && (
                 <div className="bubble">
                   <audio controls src={m.audioUrl} />
-
                   {m.pending && (
                     <div className="actions">
                       <button onClick={() => sendVoice(m)}>Envoyer</button>

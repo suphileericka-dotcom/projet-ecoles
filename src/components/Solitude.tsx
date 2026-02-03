@@ -52,8 +52,8 @@ const NOTE_KEY = "solitude_note";
 export default function Solitude({ isAuth }: SolitudeProps) {
   const navigate = useNavigate();
 
-  const { i18n } = useTranslation();
-
+  // ✅ TS6133 FIX
+  useTranslation();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -161,7 +161,6 @@ export default function Solitude({ isAuth }: SolitudeProps) {
   async function handleSend() {
     if (!isAuth || !userId || !input.trim()) return;
 
-    // EDIT
     if (editingId) {
       setMessages((msgs) =>
         msgs.map((m) =>
@@ -175,7 +174,6 @@ export default function Solitude({ isAuth }: SolitudeProps) {
       return;
     }
 
-    // SEND TEXT
     const res = await fetch("http://localhost:8000/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -208,46 +206,39 @@ export default function Solitude({ isAuth }: SolitudeProps) {
     setMessages((msgs) => msgs.filter((m) => m.id !== id));
   }
 
-  
   async function translateMessage(m: Message) {
-  if (!m.text) return;
+    if (!m.text || m.translatedText) return;
 
-  try {
-    const lang = localStorage.getItem("lang") || "fr";
+    try {
+      const lang = localStorage.getItem("lang") || "fr";
 
-    const res = await fetch("http://localhost:8000/api/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: m.text,
-        target: lang,
-      }),
-    });
+      const res = await fetch("http://localhost:8000/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: m.text,
+          target: lang,
+        }),
+      });
 
-    if (!res.ok) {
-      throw new Error("Backend translation failed");
+      if (!res.ok) throw new Error("Backend translation failed");
+
+      const data = await res.json();
+
+      setMessages((msgs) =>
+        msgs.map((msg) =>
+          msg.id === m.id
+            ? { ...msg, translatedText: data.translatedText }
+            : msg
+        )
+      );
+    } catch (err) {
+      console.error("TRANSLATION ERROR:", err);
     }
-
-    const data = await res.json();
-
-    setMessages((msgs) =>
-      msgs.map((msg) =>
-        msg.id === m.id
-          ? { ...msg, translatedText: data.translatedText }
-          : msg
-      )
-    );
-  } catch (err) {
-    console.error("TRANSLATION ERROR:", err);
   }
-}
-
-
 
   /* =====================
-     VOICE (même logique que Burnout)
+     VOICE
   ===================== */
 
   function onVoiceRecorded(audioUrl: string) {
@@ -359,9 +350,7 @@ export default function Solitude({ isAuth }: SolitudeProps) {
 
                   {m.pending && (
                     <div className="actions">
-                      <button onClick={() => sendVoice(m)}>
-                        Envoyer
-                      </button>
+                      <button onClick={() => sendVoice(m)}>Envoyer</button>
                       <button
                         className="danger"
                         onClick={() => deleteLocalVoice(m.id)}

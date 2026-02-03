@@ -10,7 +10,6 @@ export default function MicButton({ onVoiceRecorded }: MicButtonProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const recordingRef = useRef(false);
 
-  // ▶️ START
   async function startRecording() {
     if (recordingRef.current) return;
 
@@ -24,22 +23,18 @@ export default function MicButton({ onVoiceRecorded }: MicButtonProps) {
       recordingRef.current = true;
 
       recorder.ondataavailable = (e: BlobEvent) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
+        if (e.data.size > 0) chunksRef.current.push(e.data);
       };
 
       recorder.onstop = () => {
-        // ⚠️ PROTECTION DOUBLE STOP
         if (!recordingRef.current) return;
-
         recordingRef.current = false;
 
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const audioUrl = URL.createObjectURL(blob);
+
         onVoiceRecorded(audioUrl);
 
-        // nettoyage
         streamRef.current?.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
         mediaRecorderRef.current = null;
@@ -52,14 +47,11 @@ export default function MicButton({ onVoiceRecorded }: MicButtonProps) {
     }
   }
 
-  // ⏹ STOP
   function stopRecording() {
     const recorder = mediaRecorderRef.current;
-
     if (!recorder) return;
     if (!recordingRef.current) return;
     if (recorder.state !== "recording") return;
-
     recorder.stop();
   }
 
