@@ -4,7 +4,15 @@ import es from "./es";
 import de from "./de";
 import it from "./it";
 
-export const translations = {
+/**
+ * Type d’un dictionnaire de traduction
+ */
+export type TranslationDict = Record<string, string>;
+
+/**
+ * Toutes les traductions disponibles
+ */
+const translations: Record<string, TranslationDict> = {
   fr,
   en,
   es,
@@ -12,8 +20,10 @@ export const translations = {
   it,
 };
 
-export type Lang = keyof typeof translations;
-
-export function t(key: string, lang: Lang = "fr"): string {
-  return translations[lang][key] ?? key;
+/**
+ * Traduction simple par clé
+ */
+export function translate(key: string, lang: string): string {
+  const dict = translations[lang] ?? translations.fr;
+  return dict[key] ?? key;
 }
