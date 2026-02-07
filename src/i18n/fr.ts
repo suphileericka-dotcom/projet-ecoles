@@ -54,3 +54,5 @@ export default {
   send: "Envoyer",
   edit: "Modifier",
 };
+
+
